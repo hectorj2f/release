@@ -1,6 +1,6 @@
 %global KUBE_MAJOR 1
-%global KUBE_MINOR 13
-%global KUBE_PATCH 0
+%global KUBE_MINOR 15
+%global KUBE_PATCH 1
 %global KUBE_VERSION %{KUBE_MAJOR}.%{KUBE_MINOR}.%{KUBE_PATCH}
 %global RPM_RELEASE 0
 %global ARCH amd64
@@ -21,7 +21,7 @@ Summary: Container cluster management
 License: ASL 2.0
 
 URL: https://kubernetes.io
-Source0: https://dl.k8s.io/v%{KUBE_VERSION}/bin/linux/%{ARCH}/kubelet
+Source0: https://konvoy-kubelet-nokmem.s3.amazonaws.com/v%{KUBE_VERSION}/kubelet
 Source1: kubelet.service
 Source2: https://dl.k8s.io/v%{KUBE_VERSION}/bin/linux/%{ARCH}/kubectl
 Source3: https://dl.k8s.io/v%{KUBE_VERSION}/bin/linux/%{ARCH}/kubeadm
@@ -110,6 +110,7 @@ cp -p %SOURCE6 %{_builddir}/
 %setup -c -a 7 -T -n cri-tools
 
 %install
+
 
 # The setup macro from prep will make install start in the cni-plugins directory, so cd back to the root.
 cd %{_builddir}

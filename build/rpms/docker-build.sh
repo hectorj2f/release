@@ -5,7 +5,11 @@ docker build -t kubelet-rpm-builder .
 echo "Cleaning output directory..."
 sudo rm -rf output/*
 mkdir -p output
-docker run -ti --rm -v $PWD/output/:/root/rpmbuild/RPMS/ kubelet-rpm-builder $1
+if [ -z "$GPG_KEY_FILE" ]; then
+    echo "gpg key 'GPG_KEY_FILE' env var is required to sign the rpm packages and repo metadata"
+    exit 1
+fi
+docker run -ti --rm -v $GPG_KEY_FILE:/tmp/gpg-key/rpm-gpg-key.asc -v $PWD/output/:/root/rpmbuild/RPMS/ kubelet-rpm-builder $1
 sudo chown -R $USER $PWD/output
 
 echo

@@ -28,12 +28,12 @@ else
   #GOARCH/RPMARCH
   ARCHS=(
     amd64/x86_64
-    arm/armhfp
-    arm64/aarch64
-    ppc64le/ppc64le
-    s390x/s390x
   )
 fi
+
+gpg --import /tmp/gpg-key/rpm-gpg-key.asc
+
+gpg --export -a 'Kubernetes Konvoy nokmem' > /tmp/rpm-gpg-pub-key
 
 for ARCH in "${ARCHS[@]}"; do
   IFS=/ read -r GOARCH RPMARCH<<< "${ARCH}"; unset IFS;
@@ -44,7 +44,38 @@ for ARCH in "${ARCHS[@]}"; do
   sed -i "s/\%global ARCH.*/\%global ARCH ${GOARCH}/" "${SRC_PATH}/kubelet.spec"
   # Download sources if not already available
   cd "${SRC_PATH}" && spectool -gf kubelet.spec
+  echo ${SRC_PATH}
   /usr/bin/rpmbuild --target "${RPMARCH}" --define "_sourcedir ${SRC_PATH}" -bb "${SRC_PATH}/kubelet.spec"
   mkdir -p "/root/rpmbuild/RPMS/${RPMARCH}"
+
+  rpm --import /tmp/rpm-gpg-pub-key
+
+  rpm -q gpg-pubkey --qf '%{name}-%{version}-%{release} --> %{summary}\n'
+
+
+cat <<EOF >>/root/.rpmmacros
+%_topdir %(echo $HOME)/rpmbuild
+
+%_signature gpg
+%_gpg_path /root/.gnupg
+%_gpg_name Kubernetes Konvoy nokmem
+%_gpgbin /usr/bin/gpg
+%__gpg_sign_cmd %{__gpg} gpg --force-v3-sigs --batch --verbose --no-armor --passphrase-fd 3 --no-secmem-warning -u "%{_gpg_name}" -sbo %{__signature_filename} --digest-algo sha256 %{__plaintext_filename}'
+
+%__arch_install_post \
+    [ "%{buildarch}" = "noarch" ] || QA_CHECK_RPATHS=1 ; \
+    case "${QA_CHECK_RPATHS:-}" in [1yY]*) /usr/lib/rpm/check-rpaths ;; esac \
+    /usr/lib/rpm/check-buildroot
+EOF
+
+  rpm --addsign /root/rpmbuild/RPMS/${RPMARCH}/*.rpm
+
   createrepo -o "/root/rpmbuild/RPMS/${RPMARCH}/" "/root/rpmbuild/RPMS/${RPMARCH}"
+
+  gpg --detach-sign --armor /root/rpmbuild/RPMS/${RPMARCH}/repodata/repomd.xml
+
 done
+
+
+echo "Copying public key to output"
+cp /tmp/rpm-gpg-pub-key /root/rpmbuild/RPMS/${RPMARCH}/rpm-gpg-pub-key

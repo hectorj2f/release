@@ -4,6 +4,9 @@ RUN dnf install -y \
       rpm-build \
       rpmdevtools \
       createrepo \
+      perl-Digest-SHA \
+      gpg \
+      rpm-sign \
     && dnf clean all
 
 RUN rpmdev-setuptree
