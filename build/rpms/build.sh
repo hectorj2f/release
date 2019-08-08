@@ -70,7 +70,7 @@ EOF
 
   rpm --addsign /root/rpmbuild/RPMS/${RPMARCH}/*.rpm
 
-  createrepo -o "/root/rpmbuild/RPMS/${RPMARCH}/" "/root/rpmbuild/RPMS/${RPMARCH}"
+  createrepo --update --database -o "/root/rpmbuild/RPMS/${RPMARCH}/" "/root/rpmbuild/RPMS/${RPMARCH}"
 
   gpg --detach-sign --armor /root/rpmbuild/RPMS/${RPMARCH}/repodata/repomd.xml
 
@@ -78,4 +78,4 @@ done
 
 
 echo "Copying public key to output"
-cp /tmp/rpm-gpg-pub-key /root/rpmbuild/RPMS/${RPMARCH}/rpm-gpg-pub-key
+cp /tmp/rpm-gpg-pub-key /root/rpmbuild/RPMS/rpm-gpg-pub-key

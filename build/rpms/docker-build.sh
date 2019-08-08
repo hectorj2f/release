@@ -2,8 +2,6 @@
 set -e
 
 docker build -t kubelet-rpm-builder .
-echo "Cleaning output directory..."
-sudo rm -rf output/*
 mkdir -p output
 if [ -z "$GPG_KEY_FILE" ]; then
     echo "gpg key 'GPG_KEY_FILE' env var is required to sign the rpm packages and repo metadata"
