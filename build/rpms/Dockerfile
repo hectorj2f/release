@@ -7,6 +7,7 @@ RUN dnf install -y \
       perl-Digest-SHA \
       gpg \
       rpm-sign \
+      wget \
     && dnf clean all
 
 RUN rpmdev-setuptree
